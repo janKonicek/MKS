@@ -108,11 +108,21 @@ int main(void)
 		  }
 		  LL_mDelay(200);
 	  }
+
 #else
-	  uint32_t arrayBit = 0b10101001110111011100101010000000;
+	  uint32_t array = 0b10101001110111011100101010000000;
+	  uint32_t len = 32;
 
+	  for (uint32_t i = 0; i < len; i++) {
+		  if (array & (1UL << (len-1))) {
+			  LL_GPIO_SetOutputPin(LD2_GPIO_Port, LD2_Pin);
+		  } else {
+			  LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
+		  }
+		  LL_mDelay(200);
 
-
+		  array = array << 1;
+	  }
 
 #endif
 
