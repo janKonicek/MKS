@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define BIT
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -98,6 +98,23 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+#ifndef BIT
+	  uint8_t array[32] = {1, 0, 1, 0, 1, 0, 0,  1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0,  1, 0, 1, 0, 1};
+	  for (uint32_t i = 0; i < sizeof(array); i++) {
+		  if (array[i]) {
+			  LL_GPIO_SetOutputPin(LD2_GPIO_Port, LD2_Pin);
+		  } else {
+			  LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
+		  }
+		  LL_mDelay(200);
+	  }
+#else
+	  uint32_t arrayBit = 0b10101001110111011100101010000000;
+
+
+
+
+#endif
 
     /* USER CODE BEGIN 3 */
   }
