@@ -48,6 +48,9 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 extern uint16_t ntc_look_table[1024];
+
+static enum { SHOW_DS, SHOW_NTC} state = SHOW_DS;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,7 +64,20 @@ static void MX_ADC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void button(void) {
+	if (!HAL_GPIO_ReadPin(S1_GPIO_Port, S1_Pin)) {
+		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+		state = SHOW_DS;
+	}
 
+	if (!HAL_GPIO_ReadPin(S2_GPIO_Port, S2_Pin)) {
+		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
+		state = SHOW_NTC;
+	}
+
+}
 /* USER CODE END 0 */
 
 /**
@@ -110,18 +126,36 @@ int main(void) {
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
-		int16_t tempDQ = 0;
-		int16_t tempNTC = 0;
+		static int16_t tempDQ = 0;
+		static int16_t tempNTC = 0;
+		static uint32_t lastTime = 0;
 
-		OWConvertAll();
-		HAL_Delay(CONVERT_T_DELAY);
-		OWReadTemperature(&tempDQ);
+		button();
 
-		tempNTC = ntc_look_table[HAL_ADC_GetValue(&hadc)];
 
-		//sct_value(tempDQ / 10, 0, 1);
-		sct_value(tempNTC, 0, 1);
-		HAL_Delay(50);
+		if (lastTime == 0) OWConvertAll();
+		if (lastTime + CONVERT_T_DELAY < HAL_GetTick()) {
+			OWReadTemperature(&tempDQ);
+			lastTime = HAL_GetTick();
+			OWConvertAll();
+			tempNTC = ntc_look_table[HAL_ADC_GetValue(&hadc)];
+		}
+
+
+
+		switch (state) {
+		case SHOW_DS:
+			sct_value(tempDQ / 10, 0, 1);
+			HAL_Delay(50);
+
+			break;
+		case SHOW_NTC:
+			sct_value(tempNTC, 0, 1);
+			HAL_Delay(50);
+
+			break;
+		}
+
 	}
 	/* USER CODE END 3 */
 }
